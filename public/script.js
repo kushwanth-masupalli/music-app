@@ -1,44 +1,88 @@
+// --- Variables & Elements ---
+const searchInput = document.getElementById('searchInput');
 const playButton = document.getElementById('playButton');
 const playPauseIcon = document.getElementById('playPauseIcon');
-const audio = document.getElementById('audio');
+const resultsDiv = document.getElementById('results');
+const playerContainer = document.getElementById('playerContainer');
+const songTitle = document.getElementById('songTitle');
+const songArtist = document.getElementById('songArtist');
 let isPlaying = false;
+let timer;
 
-// SVG paths for play and pause icons
+// --- SVG Paths for Play and Pause Icons ---
 const playPath = '<path d="M8 5v14l11-7z"/>';
 const pausePath = '<path d="M19,4V20a2,2,0,0,1-2,2H15a2,2,0,0,1-2-2V4a2,2,0,0,1,2-2h2A2,2,0,0,1,19,4ZM9,2H7A2,2,0,0,0,5,4V20a2,2,0,0,0,2,2H9a2,2,0,0,0,2-2V4A2,2,0,0,0,9,2Z"/>';
-
-// Default audio source (replace with your own or backend response)
-const defaultSong = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
-
-// Set initial state
-audio.src = defaultSong;
 playPauseIcon.innerHTML = playPath;
 
-playButton.addEventListener('click', () => {
-    if (isPlaying) {
-        audio.pause();
-        playPauseIcon.innerHTML = playPath; // Switch to play icon
-    } else {
-        audio.play().catch(err => console.error('Playback error:', err));
-        playPauseIcon.innerHTML = pausePath; // Switch to pause icon
+// --- Search Debounce Logic ---
+searchInput.addEventListener('input', () => {
+  clearTimeout(timer);
+  timer = setTimeout(async () => {
+    const query = searchInput.value.trim();
+    if (query) {
+      await searchSongs(query);
     }
-    isPlaying = !isPlaying;
+  }, 500);
 });
 
-// Optional: Update progress bar and time
-audio.addEventListener('timeupdate', () => {
-    const currentTime = audio.currentTime;
-    const duration = audio.duration || 0;
-    const progress = (currentTime / duration) * 100;
+// --- Search Function ---
+async function searchSongs(query) {
+  try {
+    const response = await fetch(`/search?q=${encodeURIComponent(query)}`);
+    const data = await response.json();
 
-    document.getElementById('progressBar').value = progress;
-    document.getElementById('timePassed').textContent = formatTime(currentTime);
-    document.getElementById('timeLeft').textContent = formatTime(duration - currentTime);
-});
+    if (!Array.isArray(data)) {
+      throw new Error('Unexpected response format');
+    }
 
-function formatTime(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+    resultsDiv.innerHTML = '';
+    data.forEach(song => {
+      const card = document.createElement('div');
+      songArtist.textContent = song.channel;
+      songTitle.extContent = song.title;
+      card.className = 'song-card';
+      card.innerHTML = `
+        <img src="${song.thumbnail}" class="song-thumbnail" alt="${song.title}">
+        <div>
+          <h3>${song.title}</h3>
+          <p>${song.channel}</p>
+        </div>
+      `;
+      card.addEventListener('click', () => {
+        playSong(song.videoId);
+      });
+      resultsDiv.appendChild(card);
+    });
+  } catch (error) {
+    console.error('Error fetching songs:', error);
+  }
 }
 
+// --- Play Song Function ---
+function playSong(videoId) {
+  playerContainer.innerHTML = `
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+  `;
+  playPauseIcon.innerHTML = pausePath;
+  isPlaying = true;
+}
+
+// --- Play/Pause Toggle Button ---
+playButton.addEventListener('click', () => {
+  const iframe = playerContainer.querySelector('iframe');
+  if (!iframe) return;
+
+  const src = iframe.getAttribute('src');
+  if (isPlaying) {
+    iframe.setAttribute('src', src.replace('autoplay=1', 'autoplay=0'));
+    playPauseIcon.innerHTML = playPath;
+  } else {
+    iframe.setAttribute('src', src.replace('autoplay=0', 'autoplay=1'));
+    playPauseIcon.innerHTML = pausePath;
+  }
+  isPlaying = !isPlaying;
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  console.log("DOM fully loaded and parsed");
+});
