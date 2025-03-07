@@ -1,46 +1,43 @@
-require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
-// YouTube API endpoint for searching songs
+const YOUTUBE_API_KEY = 'YOUR_YOUTUBE_API_KEY';
 const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search';
 
 app.use(express.static('public'));
 
-// Endpoint to search for videos based on a query
 app.get('/search', async (req, res) => {
-  try {
-    const q = req.query.q;
-    if (!q) {
-      return res.status(400).json({ error: 'Query parameter "q" is required' });
+    const query = req.query.q;
+    if (!query) {
+        return res.status(400).json({ error: 'Query is required' });
     }
 
-    const response = await axios.get(YOUTUBE_API_URL, {
-      params: {
-        key: process.env.YOUTUBE_API_KEY,
-        q: `${q} song`,
-        type: 'video',
-        part: 'snippet',
-        maxResults: 1,
-        videoCategoryId: 10 // Music category
-      }
-    });
+    try {
+        const response = await axios.get(YOUTUBE_API_URL, {
+            params: {
+                part: 'snippet',
+                q: query,
+                type: 'video',
+                maxResults: 1,
+                key: YOUTUBE_API_KEY
+            }
+        });
 
-    const results = response.data.items.map(item => ({
-      videoId: item.id.videoId,
-      thumbnail: item.snippet.thumbnails.medium.url,
-      title: item.snippet.title
-    }));
+        const items = response.data.items;
+        if (items.length === 0) {
+            return res.status(404).json({ error: 'No songs found' });
+        }
 
-    res.json(results);
-  } catch (err) {
-    console.error('Error fetching data:', err.message);
-    res.status(500).json({ error: 'Failed to fetch data from YouTube API' });
-  }
+        const videoId = items[0].id.videoId;
+        res.json({ videoId });
+    } catch (err) {
+        console.error('YouTube API error:', err.message);
+        res.status(500).json({ error: 'Failed to fetch data from YouTube' });
+    }
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+    console.log(`Server running at http://localhost:${PORT}`);
 });

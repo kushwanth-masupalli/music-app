@@ -1,3 +1,6 @@
+
+
+
 body {
     font-family: 'Arial', sans-serif;
     background-color: #000;
@@ -24,7 +27,7 @@ nav ul {
     list-style: none;
     display: flex;
     gap: 2rem;
-    padding: 0;                           
+    padding: 0;
     margin: 0;
     align-items: center;
 }
@@ -33,7 +36,7 @@ nav a {
     text-decoration: none;
     color: #1db954; /* Spotify green */
     font-size: 1.2rem;
-    position: relative; /* For the underline */
+    position: relative;
     transition: color 0.3s ease, transform 0.3s ease;
 }
 
@@ -41,22 +44,21 @@ nav a::after {
     content: '';
     position: absolute;
     left: 0;
-    bottom: -2px; /* Positioned right under the text */
-    width: 0; /* Hidden by default */
-    height: 2px; /* Thickness of the underline */
-    background-color: #1DB954; 
-    transition: width 0.3s ease; /* Smooth underline animation */
+    bottom: -2px;
+    width: 0;
+    height: 2px;
+    background-color: #1db954;
+    transition: width 0.3s ease;
 }
 
 nav a:hover {
-    color: #fff; /* Text color on hover */
-    transform: scale(1.1); /* Slight zoom effect */
+    color: #fff;
+    transform: scale(1.1);
 }
 
 nav a:hover::after {
-    width: 100%; /* Expands underline on hover */
+    width: 100%;
 }
-
 
 .logo {
     display: flex;
@@ -73,14 +75,14 @@ nav a:hover::after {
     display: flex;
     align-items: center;
     background-color: #000;
-    border: 1px solid #1DB954;
+    border: 1px solid #1db954;
     border-radius: 50px;
     padding: 0.5rem 1rem;
     margin: 2rem 0;
 }
 
 .icon {
-    fill: #1DB954;
+    fill: #1db954;
     width: 24px;
     height: 24px;
     margin-right: 0.5rem;
@@ -97,7 +99,7 @@ nav a:hover::after {
 
 .card {
     background-color: #000;
-    border: 2px solid #1DB954;
+    border: 2px solid #1db954;
     border-radius: 15px;
     padding: 2rem;
     width: 350px;
@@ -114,7 +116,7 @@ nav a:hover::after {
     font-size: 1.5rem;
     font-weight: bold;
     margin-bottom: 0.5rem;
-    color: #1DB954;
+    color: #1db954;
 }
 
 .card__subtitle {
@@ -136,7 +138,7 @@ nav a:hover::after {
 progress {
     width: 100%;
     height: 5px;
-    accent-color: #1DB954;
+    accent-color: #1db954;
 }
 
 .card__btn {
@@ -147,20 +149,63 @@ progress {
 }
 
 .card__btn svg {
-    fill: #1DB954;
+    fill: #1db954; /* Default green for other buttons */
     width: 24px;
     height: 24px;
 }
 
-.card__btn-play svg {
-    background-color: #1DB954;
+.card__btn-play {
+    width: 48px;
+    height: 48px;
+    background-color: #1db954; /* Green background */
     border-radius: 50%;
-    padding: 0.5rem;
-    fill: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+}
+
+.card__btn-play svg {
+    fill: #000; /* Black fill for play/pause icon */
+    width: 24px;
+    height: 24px;
 }
 
 .card__btn:hover svg {
     transform: scale(1.1);
 }
 
+card__time {
+  font-weight: 400;
+  font-size: 12px;
+  padding:3px;
+}
+
+.card__timeline {
+  width: 100%;
+  height: 4px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;padding:4px;
+ 
+}
+
+.card__timeline progress {
+  width: 100%;
+  height: 100%;
+  border-radius: 100px;
+ 
+}
+
+.card__timeline progress::-webkit-progress-bar {
+  background-color: #424242;
+  border-radius: 100px;
+}
+
+.card__timeline progress::-webkit-progress-value {
+  background-color: #fff;
+  border-radius: 100px;
+   
+}
 

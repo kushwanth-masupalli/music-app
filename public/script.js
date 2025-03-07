@@ -1,61 +1,44 @@
-const searchInput = document.getElementById('searchInput');
-const audio = document.getElementById("audio");
-let timer;
+const playButton = document.getElementById('playButton');
+const playPauseIcon = document.getElementById('playPauseIcon');
+const audio = document.getElementById('audio');
+let isPlaying = false;
 
-searchInput.addEventListener('input', () => {
-    clearTimeout(timer);
+// SVG paths for play and pause icons
+const playPath = '<path d="M8 5v14l11-7z"/>';
+const pausePath = '<path d="M19,4V20a2,2,0,0,1-2,2H15a2,2,0,0,1-2-2V4a2,2,0,0,1,2-2h2A2,2,0,0,1,19,4ZM9,2H7A2,2,0,0,0,5,4V20a2,2,0,0,0,2,2H9a2,2,0,0,0,2-2V4A2,2,0,0,0,9,2Z"/>';
 
-    timer = setTimeout(() => {
-        const query = searchInput.value.trim();
-        if (query) {
-            console.log(query);
-            searchSongs(query);
-        }
-    }, 2000);
+// Default audio source (replace with your own or backend response)
+const defaultSong = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+
+// Set initial state
+audio.src = defaultSong;
+playPauseIcon.innerHTML = playPath;
+
+playButton.addEventListener('click', () => {
+    if (isPlaying) {
+        audio.pause();
+        playPauseIcon.innerHTML = playPath; // Switch to play icon
+    } else {
+        audio.play().catch(err => console.error('Playback error:', err));
+        playPauseIcon.innerHTML = pausePath; // Switch to pause icon
+    }
+    isPlaying = !isPlaying;
 });
 
-async function searchSongs(query = '') {
-    try {
-        const response = await fetch(`/search?q=${encodeURIComponent(query)}`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch songs');
-        }
-        const data = await response.json();
-        if (data.length === 0) {
-            throw new Error('No songs found');
-        }
+// Optional: Update progress bar and time
+audio.addEventListener('timeupdate', () => {
+    const currentTime = audio.currentTime;
+    const duration = audio.duration || 0;
+    const progress = (currentTime / duration) * 100;
 
-        // Get the first video's videoId
-        const firstVideo = data[0];
-        const videoId = firstVideo.videoId;
+    document.getElementById('progressBar').value = progress;
+    document.getElementById('timePassed').textContent = formatTime(currentTime);
+    document.getElementById('timeLeft').textContent = formatTime(duration - currentTime);
+});
 
-        // Fetch the audio URL using the videoId
-        const audioUrl = await getAudioUrl(videoId);
-
-        // Set the audio element's source to the audio URL
-        audio.src = audioUrl;
-
-        // Optionally, you can automatically play the audio
-        audio.play().catch(error => {
-            console.error('Error playing audio:', error);
-        });
-
-    } catch (error) {
-        console.error('Error:', error.message);
-    }
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
 }
 
-async function getAudioUrl(videoId) {
-    try {
-        // Use the correct endpoint `/audio`
-        const response = await fetch(`/audio?videoId=${videoId}`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch audio URL');
-        }
-        const data = await response.json();
-        return data.audioUrl; // Ensure this matches the property name in the backend response
-    } catch (error) {
-        console.error('Error fetching audio URL:', error);
-        throw error;
-    }
-}
