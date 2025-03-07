@@ -1,0 +1,51 @@
+body {
+    background-color: black;
+    color: white;
+}
+
+#img {
+    height: 65px;
+    padding-right: 15px;
+}
+
+.first {
+    display: flex;
+    padding: 0;
+    margin: 0;
+    align-items: center;
+    height: 75px;
+    width: 100%;
+    justify-content: flex-start;
+}
+
+#a1 {
+    text-decoration: none;
+    font-size: 1.6em;
+    color: rgb(30, 215, 96); /* Spotify green */
+    padding: 10px 20px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    margin-left: auto;
+    position: relative; /* Needed for absolute positioning of the underline */
+}
+
+#a1::after {
+    content: ''; /* Creates the underline */
+    position: absolute;
+    left: 0;
+    bottom: 0; /* Adjusts to be right under the text */
+    width: 0; /* Starts hidden */
+    height: 2px; /* Thickness of the underline */
+    background-color: rgb(30, 215, 96); /* Spotify green */
+    transition: width 0.3s ease; /* Smooth expansion */
+}
+
+#a1:hover {
+    color: white;
+    background-color: black;
+    transform: scale(2);
+}
+
+#a1:hover::after {
+    width: 100%; /* Expands the underline */
+}
