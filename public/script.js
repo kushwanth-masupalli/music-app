@@ -7,15 +7,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const playerContainer = document.getElementById('playerContainer');
   const songTitle = document.getElementById('songTitle');
   const songArtist = document.getElementById('songArtist');
+  const progressBar = document.getElementById('progressBar');
+  const currentTimeDisplay = document.getElementById('timePassed');
+  const durationDisplay = document.getElementById('timeLeft');
   let isPlaying = false;
   let timer;
-
-  // Check if all required elements exist
-  if (!searchInput || !playButton || !playPauseIcon || !resultsDiv || 
-      !playerContainer || !songTitle || !songArtist) {
-    console.error('Required DOM elements not found');
-    return;
-  }
 
   // --- SVG Paths for Play and Pause Icons ---
   const playPath = '<path d="M8 5v14l11-7z"/>';
@@ -25,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Create an embedded iframe player instead of using videojs ---
   let youtubePlayer = null;
   playerContainer.innerHTML = '<div id="youtube-player"></div>';
-  
+
   // Initialize YouTube API
   if (!window.YT) {
     // Load YouTube IFrame Player API
@@ -33,9 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
     tag.src = 'https://www.youtube.com/iframe_api';
     const firstScriptTag = document.getElementsByTagName('script')[0];
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    
+
     // Create YouTube player when API is ready
-    window.onYouTubeIframeAPIReady = function() {
+    window.onYouTubeIframeAPIReady = function () {
       youtubePlayer = new YT.Player('youtube-player', {
         height: '315',
         width: '560',
@@ -66,17 +62,56 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-  
+
   // Handle player state changes
   function onPlayerStateChange(event) {
     if (event.data === YT.PlayerState.PLAYING) {
       playPauseIcon.innerHTML = pausePath;
       isPlaying = true;
+      startProgressUpdate();
     } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
       playPauseIcon.innerHTML = playPath;
       isPlaying = false;
+      stopProgressUpdate();
     }
   }
+
+  // --- Progress Bar Functionality ---
+  function startProgressUpdate() {
+    timer = setInterval(updateProgress, 500);
+  }
+
+  function stopProgressUpdate() {
+    clearInterval(timer);
+  }
+
+  function updateProgress() {
+    if (youtubePlayer && youtubePlayer.getCurrentTime && youtubePlayer.getDuration) {
+      const currentTime = youtubePlayer.getCurrentTime();
+      const duration = youtubePlayer.getDuration();
+
+      if (duration > 0) {
+        progressBar.max = duration;
+        progressBar.value = currentTime;
+
+        currentTimeDisplay.textContent = formatTime(currentTime);
+        durationDisplay.textContent = formatTime(duration);
+      }
+    }
+  }
+
+  function formatTime(time) {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60).toString().padStart(2, '0');
+    return `${minutes}:${seconds}`;
+  }
+
+  // --- Seek to new time when user changes progress bar ---
+  progressBar.addEventListener('input', () => {
+    if (youtubePlayer && youtubePlayer.seekTo) {
+      youtubePlayer.seekTo(parseFloat(progressBar.value));
+    }
+  });
 
   // --- Search Debounce Logic ---
   searchInput.addEventListener('input', () => {
@@ -95,13 +130,13 @@ document.addEventListener('DOMContentLoaded', () => {
   async function searchSongs(query) {
     try {
       resultsDiv.innerHTML = '<p>Searching...</p>';
-      
+
       const response = await fetch(`/search?q=${encodeURIComponent(query)}`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-      
+
       const data = await response.json();
 
       // Check if the response contains an error
@@ -151,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!videoId) {
         throw new Error('Invalid video ID');
       }
-      
+
       // Wait for player to be ready
       if (youtubePlayer && youtubePlayer.loadVideoById) {
         youtubePlayer.loadVideoById(videoId);
@@ -173,13 +208,13 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('YouTube player is not ready yet');
       return;
     }
-    
+
     // Check if a video is loaded
     if (youtubePlayer.getVideoUrl().indexOf('watch') === -1) {
       alert('Please select a song first');
       return;
     }
-    
+
     if (isPlaying) {
       youtubePlayer.pauseVideo();
       playPauseIcon.innerHTML = playPath;

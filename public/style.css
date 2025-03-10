@@ -217,3 +217,12 @@ progress {
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Adds a shadow effect */
 }
 
+#playerContainer{
+    height: 100px;
+    width: 100px;
+}
+
+#youtube-player{
+    height: 0px;
+    width: 0px;
+}
